@@ -559,6 +559,27 @@ textarea.finput{height:80px;resize:none}
       <button class="curr-btn" data-c="EUR" onclick="setCurr('EUR')"><span class="csym">€</span><span class="ccode">EUR</span></button>
       <button class="curr-btn" data-c="AED" onclick="setCurr('AED')"><span class="csym">د.إ</span><span class="ccode">AED</span></button>
     </div>
+    <div style="padding:22px 22px 12px"><span class="sec-title">УСТАНОВКА</span></div>
+    <div class="act-row" id="pwa-install-row" onclick="pwaInstall()" style="display:none">
+      <div class="act-ico" style="background:rgba(200,165,90,.12)">📲</div>
+      <div class="act-info"><div class="act-t">Установить приложение</div><div class="act-s">Добавить МУРЗА на главный экран</div></div>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--text3)" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div id="pwa-ios-row" style="display:none;margin:0 16px 8px;background:var(--bg1);border-radius:14px;border:1px solid var(--b);padding:16px 15px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div class="act-ico" style="background:rgba(200,165,90,.12);flex-shrink:0">📲</div>
+        <div><div class="act-t">Установить на iPhone</div><div class="act-s">Добавить МУРЗА на главный экран</div></div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7">
+        1. Нажмите <span style="color:var(--gold)">«Поделиться»</span> <span style="font-size:14px">⬆️</span> внизу Safari<br>
+        2. Выберите <span style="color:var(--gold)">«На экран «Домой»»</span><br>
+        3. Нажмите <span style="color:var(--gold)">«Добавить»</span>
+      </div>
+    </div>
+    <div id="pwa-installed-row" style="display:none;margin:0 16px 8px;background:var(--bg1);border-radius:14px;border:1px solid var(--b);padding:16px 15px;display:flex;align-items:center;gap:12px">
+      <div class="act-ico" style="background:rgba(61,184,112,.1);flex-shrink:0">✅</div>
+      <div><div class="act-t" style="color:var(--pos)">Приложение установлено</div><div class="act-s">МУРЗА уже на вашем устройстве</div></div>
+    </div>
     <div style="padding:22px 22px 12px"><span class="sec-title">ДЕЙСТВИЯ</span></div>
     <div class="act-row" onclick="doSnap()">
       <div class="act-ico" style="background:var(--gold4)">📷</div>
@@ -883,6 +904,31 @@ function doSnap(){
 let tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2200)}
 
+/* ── PWA INSTALL ── */
+let _deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredPrompt=e;
+  document.getElementById('pwa-install-row').style.display='flex';
+});
+window.addEventListener('appinstalled',()=>{
+  _deferredPrompt=null;
+  document.getElementById('pwa-install-row').style.display='none';
+  document.getElementById('pwa-installed-row').style.display='flex';
+});
+function pwaInstall(){
+  if(_deferredPrompt){_deferredPrompt.prompt();_deferredPrompt.userChoice.then(r=>{if(r.outcome==='accepted'){document.getElementById('pwa-install-row').style.display='none';}});_deferredPrompt=null;}
+}
+function checkPWARows(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.matchMedia('(display-mode: standalone)').matches;
+  const isInstalled=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  if(isInstalled){
+    document.getElementById('pwa-installed-row').style.removeProperty('display');
+  } else if(isIOS){
+    document.getElementById('pwa-ios-row').style.display='block';
+  }
+}
+
 /* ── PWA ── */
 function initPWA(){
   const c=document.createElement('canvas');c.width=c.height=512;
@@ -900,7 +946,7 @@ function initPWA(){
 }
 
 /* ── INIT ── */
-load();initPWA();renderHome();renderSettings();
+load();initPWA();renderHome();renderSettings();checkPWARows();
 if('serviceWorker' in navigator){
   const sw=`self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('fetch',e=>e.respondWith(caches.open('mz1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{c.put(e.request,res.clone());return res})))));`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
