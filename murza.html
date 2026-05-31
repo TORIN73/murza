@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="МУРЗА">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#08080F">
+<title>МУРЗА</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:    #08080F;
+  --bg1:   #0E0E1C;
+  --bg2:   #13132A;
+  --bg3:   #1A1A36;
+  --bg4:   #222244;
+  --gold:  #C8A55A;
+  --gold2: #E2C98A;
+  --gold3: rgba(200,165,90,0.14);
+  --gold4: rgba(200,165,90,0.06);
+  --text:  #EEE8D8;
+  --text2: #9A92A0;
+  --text3: #48445A;
+  --pos:   #3DB870;
+  --neg:   #D45555;
+  --b:     rgba(255,255,255,0.07);
+  --b2:    rgba(255,255,255,0.13);
+  --b3:    rgba(200,165,90,0.3);
+  --safe-t: env(safe-area-inset-top,0px);
+  --safe-b: env(safe-area-inset-bottom,0px);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+
+/* ── APP SHELL ── */
+#app{position:fixed;inset:0;padding-top:var(--safe-t);padding-bottom:var(--safe-b)}
+
+.screen{
+  position:absolute;inset:0;
+  padding-top:var(--safe-t);padding-bottom:var(--safe-b);
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  transform:translateX(110%);
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+  will-change:transform;
+}
+.screen.active{transform:translateX(0)}
+.screen.back{transform:translateX(-22%)}
+#scr-home{transform:translateX(0)}
+
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── NAV BAR ── */
+.navbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;flex-shrink:0;
+  border-bottom:1px solid var(--b);
+}
+.nav-title{font-size:14px;font-weight:400;letter-spacing:.5px;color:var(--text)}
+.nav-back{background:none;border:none;cursor:pointer;color:var(--text);display:flex;padding:6px;margin:-6px}
+.nav-act{font-size:13px;color:var(--gold);background:none;border:none;cursor:pointer;letter-spacing:.5px;font-family:var(--sans)}
+
+/* ── HOME HEADER ── */
+.home-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 22px 14px;flex-shrink:0;
+}
+.wordmark{}
+.wm-main{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gold);letter-spacing:6px;line-height:1}
+.wm-sub{font-size:8px;color:var(--text3);letter-spacing:4px;margin-top:4px;font-weight:300}
+.head-icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--b);background:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+}
+.head-icon-btn svg{stroke:var(--text2)}
+
+/* ── CAPITAL HERO ── */
+.hero{
+  margin:0 16px;
+  background:var(--bg1);
+  border-radius:24px;
+  border:1px solid var(--b2);
+  padding:24px 24px 20px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,165,90,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold3),transparent);
+}
+.hero-label{font-size:9px;letter-spacing:3.5px;color:var(--text3);font-weight:400}
+.hero-amount{
+  font-family:var(--serif);font-size:clamp(34px,10vw,50px);font-weight:300;
+  color:var(--gold);letter-spacing:-1px;line-height:1;margin-top:8px;
+}
+.hero-alt{font-size:11px;color:var(--text3);margin-top:6px;letter-spacing:.3px}
+.hero-divider{height:1px;background:var(--b);margin:16px 0}
+.hero-foot{display:flex;align-items:center;gap:10px}
+.gbadge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  font-size:12px;font-weight:500;letter-spacing:.2px;
+}
+.gbadge.up{background:rgba(61,184,112,.1);color:var(--pos)}
+.gbadge.dn{background:rgba(212,85,85,.1);color:var(--neg)}
+.gmono{font-size:11px;color:var(--text3)}
+
+/* ── SPARKLINE ── */
+.spark-card{
+  margin:12px 16px 0;
+  background:var(--bg1);border-radius:18px;
+  border:1px solid var(--b);padding:18px;
+}
+.spark-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.spark-l-label{font-size:9px;letter-spacing:3px;color:var(--text3)}
+.spark-l-sub{font-size:11px;color:var(--text2);margin-top:3px}
+.spark-r-delta{font-size:15px;font-weight:400;text-align:right}
+.spark-r-pct{font-size:11px;text-align:right;margin-top:2px}
+.spark-svg{width:100%;overflow:visible;display:block}
+.spark-dates{display:flex;justify-content:space-between;margin-top:6px}
+.spark-date{font-size:9px;color:var(--text3)}
+
+/* ── SECTION ── */
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 22px 12px;
+}
+.sec-title{font-size:9px;letter-spacing:3.5px;color:var(--text3)}
+.sec-add{background:none;border:none;cursor:pointer;color:var(--gold);padding:2px;display:flex}
+
+/* ── ASSET CARD ── */
+.acard{
+  margin:0 16px 8px;
+  background:var(--bg1);border-radius:16px;
+  border:1px solid var(--b);padding:14px 16px;
+  display:flex;align-items:center;gap:13px;
+  cursor:pointer;transition:background .15s;
+  -webkit-user-select:none;
+}
+.acard:active{background:var(--bg2)}
+.aicon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.ainfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.aname{font-size:13px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.atag{font-size:9px;letter-spacing:1.5px;color:var(--text3)}
+.abar-bg{height:2px;background:var(--bg4);border-radius:2px;margin-top:5px}
+.abar{height:2px;border-radius:2px;transition:width .4s}
+.aamts{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.aamt{font-size:13px;font-weight:400}
+.ashare{font-size:10px;color:var(--text3)}
+
+/* ── ADD BTN ── */
+.add-ghost{
+  margin:8px 16px 0;width:calc(100% - 32px);
+  border:1px solid var(--b2);border-radius:14px;
+  background:none;padding:14px;cursor:pointer;
+  color:var(--gold);font-size:12px;letter-spacing:1.5px;font-weight:400;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;font-family:var(--sans);
+}
+.add-ghost:active{background:var(--gold4)}
+
+/* ── BOTTOM TABS ── */
+.tabs{
+  display:flex;flex-shrink:0;
+  background:rgba(8,8,15,.96);
+  border-top:1px solid var(--b);
+  padding-bottom:var(--safe-b);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 4px 8px;gap:4px;background:none;border:none;cursor:pointer;
+}
+.ticon{font-size:20px;opacity:.4;transition:opacity .2s}
+.tlabel{font-size:9px;letter-spacing:1.5px;color:var(--text3);transition:color .2s}
+.tab.active .ticon{opacity:1}
+.tab.active .tlabel{color:var(--gold)}
+
+/* ── EMPTY ── */
+.empty{display:flex;flex-direction:column;align-items:center;padding:56px 20px;gap:12px}
+.empty-ico{font-size:36px;opacity:.3}
+.empty-txt{font-size:13px;color:var(--text3);text-align:center;line-height:1.6}
+
+/* ── FORMS ── */
+.fgroup{padding:20px 22px 0}
+.flabel{font-size:9px;letter-spacing:2.5px;color:var(--text3);margin-bottom:9px;display:block}
+.finput{
+  width:100%;background:var(--bg1);
+  border:1px solid var(--b);border-radius:12px;
+  padding:14px 16px;font-size:15px;color:var(--text);
+  outline:none;font-family:var(--sans);transition:border-color .2s;
+}
+.finput:focus{border-color:rgba(200,165,90,.4)}
+.finput::placeholder{color:var(--text3)}
+textarea.finput{height:80px;resize:none}
+
+.cgrid{display:flex;flex-wrap:wrap;gap:7px}
+.citem{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:10px;
+  border:1px solid var(--b);background:var(--bg1);
+  cursor:pointer;transition:all .15s;
+}
+.citem.on{border-width:1px}
+.citem-ico{font-size:16px}
+.citem-lbl{font-size:11px;color:var(--text2)}
+.citem.on .citem-lbl{color:inherit}
+
+.trow{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg1);border-radius:12px;border:1px solid var(--b);padding:16px;
+}
+.trow-l{}
+.trow-title{font-size:14px;color:var(--text)}
+.trow-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.tsw{
+  width:46px;height:26px;border-radius:13px;
+  background:var(--bg4);cursor:pointer;position:relative;
+  border:none;outline:none;flex-shrink:0;transition:background .2s;
+}
+.tsw.on{background:var(--gold)}
+.tsw::after{
+  content:'';position:absolute;
+  width:20px;height:20px;border-radius:50%;
+  background:#fff;top:3px;left:3px;
+  transition:transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.tsw.on::after{transform:translateX(20px)}
+
+.save-btn{
+  margin:20px 22px 0;width:calc(100% - 44px);
+  background:var(--gold4);border:1px solid var(--b3);
+  border-radius:12px;padding:15px;
+  color:var(--gold);font-size:13px;font-weight:400;letter-spacing:1px;
+  cursor:pointer;font-family:var(--sans);transition:background .15s;
+}
+.save-btn:active{background:rgba(200,165,90,.2)}
+.del-btn{
+  margin:16px 22px 0;width:calc(100% - 44px);
+  border:1px solid rgba(212,85,85,.25);border-radius:12px;padding:13px;
+  color:var(--neg);font-size:12px;background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-family:var(--sans);
+}
+
+/* ── GOALS ── */
+.gcard{
+  margin:0 16px 10px;
+  background:var(--bg1);border-radius:20px;
+  border:1px solid var(--b);padding:20px;
+  display:flex;flex-direction:column;gap:13px;
+}
+.gcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.gcard-name{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--text);line-height:1.2;flex:1}
+.gdel{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px;flex-shrink:0;margin-top:3px}
+.pb{height:3px;background:var(--bg4);border-radius:2px}
+.pbf{height:3px;border-radius:2px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.gstats{display:flex;justify-content:space-between}
+.gstat-l{font-size:9px;letter-spacing:1.5px;color:var(--text3);margin-bottom:3px}
+.gstat-v{font-size:13px;font-weight:400}
+.gdeadline{font-size:11px;color:var(--text3)}
+
+.form-panel{
+  margin:14px 16px 0;
+  background:var(--bg1);border-radius:18px;
+  border:1px solid var(--b);padding:20px;
+  display:flex;flex-direction:column;gap:11px;
+}
+.form-panel-title{
+  font-family:var(--serif);font-size:17px;font-weight:300;
+  color:var(--gold);letter-spacing:.5px;
+}
+
+/* ── ANALYSIS ── */
+.sum-row{display:flex;gap:8px;margin:16px 16px 0}
+.scard{
+  flex:1;background:var(--bg1);border-radius:14px;
+  border:1px solid var(--b);padding:16px;
+}
+.scard-lbl{font-size:9px;letter-spacing:2.5px;color:var(--text3)}
+.scard-val{font-size:15px;font-weight:400;margin-top:5px}
+.netcard{
+  margin:8px 16px 0;background:var(--bg1);
+  border-radius:14px;border:1px solid var(--b2);padding:18px;
+  position:relative;overflow:hidden;
+}
+.netcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold3),transparent)}
+.netcard-lbl{font-size:9px;letter-spacing:2.5px;color:var(--text3)}
+.netcard-val{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gold);margin-top:4px;letter-spacing:-.5px}
+
+.cbar-row{
+  display:flex;gap:11px;align-items:flex-start;
+  margin:0 16px 9px;
+  background:var(--bg1);border-radius:14px;
+  border:1px solid var(--b);padding:14px;
+}
+.cdot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.cbar-info{flex:1;display:flex;flex-direction:column;gap:5px}
+.cbar-top{display:flex;justify-content:space-between;align-items:center}
+.cbar-name{font-size:13px;color:var(--text);font-weight:400}
+.cbar-amt{font-size:13px;font-weight:400}
+.bar2bg{height:2px;background:var(--bg4);border-radius:2px}
+.bar2f{height:2px;border-radius:2px;max-width:100%}
+.cpct{font-size:10px;color:var(--text3)}
+.debt-row{
+  display:flex;align-items:center;gap:10px;
+  margin:0 16px 8px;background:var(--bg1);border-radius:14px;
+  border:1px solid rgba(212,85,85,.18);padding:13px 15px;
+}
+.dname{flex:1;font-size:13px;color:var(--text)}
+.damt{font-size:13px;color:var(--neg);font-weight:400}
+
+/* ── SETTINGS ── */
+.curr-grid{display:flex;gap:7px;margin:0 16px}
+.curr-btn{
+  flex:1;background:var(--bg1);border-radius:10px;
+  border:1px solid var(--b);padding:13px 4px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all .15s;
+}
+.curr-btn.on{border-color:var(--gold);background:var(--gold4)}
+.csym{font-family:var(--serif);font-size:19px;color:var(--text2);line-height:1;font-weight:400}
+.ccode{font-size:9px;color:var(--text3);letter-spacing:1px}
+.curr-btn.on .csym,.curr-btn.on .ccode{color:var(--gold)}
+.act-row{
+  margin:0 16px 8px;
+  background:var(--bg1);border-radius:14px;border:1px solid var(--b);
+  padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s;
+}
+.act-row:active{background:var(--bg2)}
+.act-ico{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+}
+.act-info{flex:1}
+.act-t{font-size:14px;color:var(--text)}
+.act-s{font-size:11px;color:var(--text3);margin-top:2px}
+.about{
+  margin:0 16px;background:var(--bg1);
+  border-radius:20px;border:1px solid var(--b);
+  padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.about-logo{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--gold);letter-spacing:6px}
+.about-ver{font-size:10px;color:var(--text3);letter-spacing:1.5px;margin-top:2px}
+.about-line{width:32px;height:1px;background:var(--b3);margin:8px 0}
+.about-desc{font-size:12px;color:var(--text2);text-align:center;line-height:1.6;max-width:200px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:calc(72px + var(--safe-b) + 12px);left:50%;transform:translateX(-50%);
+  background:var(--bg2);border:1px solid var(--b2);
+  border-radius:22px;padding:10px 20px;
+  font-size:12px;color:var(--text);white-space:nowrap;letter-spacing:.3px;
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:999;
+}
+.toast.on{opacity:1}
+
+/* ── DIALOG ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  z-index:500;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.overlay.on{opacity:1;pointer-events:all}
+.dialog{
+  background:var(--bg2);border-radius:22px;padding:26px;
+  border:1px solid var(--b2);width:100%;max-width:300px;
+  transform:scale(.92);transition:transform .25s cubic-bezier(.22,1,.36,1);
+}
+.overlay.on .dialog{transform:scale(1)}
+.dialog h3{font-family:var(--serif);font-size:20px;font-weight:300;color:var(--text);margin-bottom:6px}
+.dialog p{font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.5}
+.dbts{display:flex;gap:8px}
+.dbt{
+  flex:1;padding:12px;border-radius:11px;
+  border:1px solid var(--b);background:var(--bg3);
+  font-size:13px;color:var(--text);cursor:pointer;font-family:var(--sans);
+}
+.dbt.danger{border-color:rgba(212,85,85,.35);color:var(--neg);background:rgba(212,85,85,.06)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════ HOME ══════════ -->
+<div class="screen active" id="scr-home">
+  <div class="scroll" id="home-scroll">
+    <div class="home-head">
+      <div class="wordmark">
+        <div class="wm-main">МУРЗА</div>
+        <div class="wm-sub">WEALTH TRACKER</div>
+      </div>
+      <button class="head-icon-btn" onclick="navTo('settings')">
+        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </div>
+
+    <div class="hero">
+      <div class="hero-label">ОБЩИЙ КАПИТАЛ</div>
+      <div class="hero-amount" id="h-total">—</div>
+      <div class="hero-alt" id="h-alt"></div>
+      <div class="hero-divider"></div>
+      <div class="hero-foot">
+        <div class="gbadge" id="h-badge"></div>
+        <div class="gmono" id="h-mono"></div>
+      </div>
+    </div>
+
+    <div class="spark-card" id="spark-sec">
+      <div class="spark-head">
+        <div>
+          <div class="spark-l-label">ДИНАМИКА</div>
+          <div class="spark-l-sub">История снимков</div>
+        </div>
+        <div>
+          <div class="spark-r-delta" id="sp-delta"></div>
+          <div class="spark-r-pct" id="sp-pct"></div>
+        </div>
+      </div>
+      <svg class="spark-svg" id="sp-svg" height="56" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
+      <div class="spark-dates">
+        <span class="spark-date" id="sp-from"></span>
+        <span class="spark-date" id="sp-to"></span>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      <span class="sec-title">ИСТОЧНИКИ КАПИТАЛА</span>
+      <button class="sec-add" onclick="openAdd()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      </button>
+    </div>
+    <div id="a-list"></div>
+    <button class="add-ghost" onclick="openAdd()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--gold)"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      ДОБАВИТЬ АКТИВ
+    </button>
+    <div style="height:36px"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="t1-h" onclick="goTab('home')"><span class="ticon">🏠</span><span class="tlabel">ГЛАВНАЯ</span></button>
+    <button class="tab" id="t1-a" onclick="goTab('analysis')"><span class="ticon">📊</span><span class="tlabel">АНАЛИЗ</span></button>
+    <button class="tab" id="t1-g" onclick="goTab('goals')"><span class="ticon">🎯</span><span class="tlabel">ЦЕЛИ</span></button>
+  </div>
+</div>
+
+<!-- ══════════ ANALYSIS ══════════ -->
+<div class="screen" id="scr-analysis">
+  <div class="scroll">
+    <div class="home-head" style="padding-bottom:8px">
+      <div class="wordmark"><div class="wm-main">МУРЗА</div><div class="wm-sub">WEALTH TRACKER</div></div>
+      <div style="width:38px"></div>
+    </div>
+    <div id="an-body"></div>
+    <div style="height:36px"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab" id="t2-h" onclick="goTab('home')"><span class="ticon">🏠</span><span class="tlabel">ГЛАВНАЯ</span></button>
+    <button class="tab active" id="t2-a" onclick="goTab('analysis')"><span class="ticon">📊</span><span class="tlabel">АНАЛИЗ</span></button>
+    <button class="tab" id="t2-g" onclick="goTab('goals')"><span class="ticon">🎯</span><span class="tlabel">ЦЕЛИ</span></button>
+  </div>
+</div>
+
+<!-- ══════════ GOALS ══════════ -->
+<div class="screen" id="scr-goals">
+  <div class="scroll">
+    <div class="home-head" style="padding-bottom:8px">
+      <div class="wordmark"><div class="wm-main">МУРЗА</div><div class="wm-sub">WEALTH TRACKER</div></div>
+      <button class="sec-add" onclick="navTo('goal-add')" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold)"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
+    </div>
+    <div id="g-body"></div>
+    <div style="height:36px"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab" id="t3-h" onclick="goTab('home')"><span class="ticon">🏠</span><span class="tlabel">ГЛАВНАЯ</span></button>
+    <button class="tab" id="t3-a" onclick="goTab('analysis')"><span class="ticon">📊</span><span class="tlabel">АНАЛИЗ</span></button>
+    <button class="tab active" id="t3-g" onclick="goTab('goals')"><span class="ticon">🎯</span><span class="tlabel">ЦЕЛИ</span></button>
+  </div>
+</div>
+
+<!-- ══════════ ADD ══════════ -->
+<div class="screen" id="scr-add">
+  <div class="navbar">
+    <button class="nav-back" onclick="navBack()">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title">Новый актив</span>
+    <button class="nav-act" onclick="doAdd()">Сохранить</button>
+  </div>
+  <div class="scroll">
+    <div class="fgroup"><label class="flabel">НАЗВАНИЕ</label><input class="finput" id="a-name" type="text" placeholder="Например: Квартира на Арбате" autocomplete="off"></div>
+    <div class="fgroup"><label class="flabel">СУММА (₽)</label><input class="finput" id="a-amt" type="number" placeholder="0" inputmode="decimal"></div>
+    <div class="fgroup"><label class="flabel">КАТЕГОРИЯ</label><div class="cgrid" id="a-cats"></div></div>
+    <div class="fgroup"><div class="trow"><div class="trow-l"><div class="trow-title">Долг / кредит</div><div class="trow-sub">Вычтется из капитала</div></div><button class="tsw" id="a-debt" onclick="this.classList.toggle('on')"></button></div></div>
+    <div class="fgroup"><label class="flabel">ЗАМЕТКА</label><textarea class="finput" id="a-note" placeholder="Необязательно"></textarea></div>
+    <button class="save-btn" onclick="doAdd()">СОХРАНИТЬ АКТИВ</button>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══════════ EDIT ══════════ -->
+<div class="screen" id="scr-edit">
+  <div class="navbar">
+    <button class="nav-back" onclick="navBack()">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title">Редактировать</span>
+    <button class="nav-act" onclick="doEdit()">Сохранить</button>
+  </div>
+  <div class="scroll">
+    <div class="fgroup"><label class="flabel">НАЗВАНИЕ</label><input class="finput" id="e-name" type="text" autocomplete="off"></div>
+    <div class="fgroup"><label class="flabel">СУММА (₽)</label><input class="finput" id="e-amt" type="number" inputmode="decimal"></div>
+    <div class="fgroup"><label class="flabel">КАТЕГОРИЯ</label><div class="cgrid" id="e-cats"></div></div>
+    <div class="fgroup"><div class="trow"><div class="trow-l"><div class="trow-title">Долг / кредит</div><div class="trow-sub">Вычтется из капитала</div></div><button class="tsw" id="e-debt" onclick="this.classList.toggle('on')"></button></div></div>
+    <div class="fgroup"><label class="flabel">ЗАМЕТКА</label><textarea class="finput" id="e-note" placeholder="Необязательно"></textarea></div>
+    <button class="save-btn" onclick="doEdit()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+    <button class="del-btn" onclick="askDelete()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      УДАЛИТЬ АКТИВ
+    </button>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══════════ SETTINGS ══════════ -->
+<div class="screen" id="scr-settings">
+  <div class="navbar">
+    <button class="nav-back" onclick="navBack()">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title">Настройки</span>
+    <div style="width:32px"></div>
+  </div>
+  <div class="scroll">
+    <div style="padding:20px 22px 12px"><span class="sec-title">ОСНОВНАЯ ВАЛЮТА</span></div>
+    <div class="curr-grid">
+      <button class="curr-btn" data-c="RUB" onclick="setCurr('RUB')"><span class="csym">₽</span><span class="ccode">RUB</span></button>
+      <button class="curr-btn" data-c="USD" onclick="setCurr('USD')"><span class="csym">$</span><span class="ccode">USD</span></button>
+      <button class="curr-btn" data-c="EUR" onclick="setCurr('EUR')"><span class="csym">€</span><span class="ccode">EUR</span></button>
+      <button class="curr-btn" data-c="AED" onclick="setCurr('AED')"><span class="csym">د.إ</span><span class="ccode">AED</span></button>
+    </div>
+    <div style="padding:22px 22px 12px"><span class="sec-title">ДЕЙСТВИЯ</span></div>
+    <div class="act-row" onclick="doSnap()">
+      <div class="act-ico" style="background:var(--gold4)">📷</div>
+      <div class="act-info"><div class="act-t">Сохранить снимок</div><div class="act-s">Зафиксировать текущий капитал</div></div>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--text3)" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div style="padding:22px 22px 12px"><span class="sec-title">О ПРИЛОЖЕНИИ</span></div>
+    <div class="about">
+      <div class="about-logo">МУРЗА</div>
+      <div class="about-ver">ВЕРСИЯ 1.0 · PWA</div>
+      <div class="about-line"></div>
+      <div class="about-desc">Личный трекер капитала. Добавляй активы, отслеживай динамику, ставь цели.</div>
+    </div>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<!-- ══════════ GOAL FORM ══════════ -->
+<div class="screen" id="scr-goal-add">
+  <div class="navbar">
+    <button class="nav-back" onclick="navBack()">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="nav-title">Новая цель</span>
+    <button class="nav-act" onclick="doGoal()">Сохранить</button>
+  </div>
+  <div class="scroll">
+    <div class="fgroup"><label class="flabel">НАЗВАНИЕ</label><input class="finput" id="gt" type="text" placeholder="Капитал 10 000 000 ₽" autocomplete="off"></div>
+    <div class="fgroup"><label class="flabel">ЦЕЛЕВАЯ СУММА (₽)</label><input class="finput" id="ga" type="number" placeholder="10000000" inputmode="decimal"></div>
+    <div class="fgroup"><label class="flabel">ДЕДЛАЙН</label><input class="finput" id="gd" type="text" placeholder="2026-12-31"></div>
+    <button class="save-btn" onclick="doGoal()">ДОБАВИТЬ ЦЕЛЬ</button>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<div class="toast" id="toast"></div>
+<div class="overlay" id="ovl">
+  <div class="dialog">
+    <h3 id="dlg-title">Удалить?</h3>
+    <p id="dlg-msg"></p>
+    <div class="dbts">
+      <button class="dbt" onclick="closeOvl()">Отмена</button>
+      <button class="dbt danger" id="dlg-ok">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RATES={RUB:1,USD:.011,EUR:.010,AED:.040};
+const SYM={RUB:'₽',USD:'$',EUR:'€',AED:'د.إ'};
+const CATS=['estate','invest','cash','crypto','transport','business','other'];
+const CLAB={estate:'Недвижимость',invest:'Инвестиции',cash:'Наличные / Вклад',crypto:'Крипто',transport:'Транспорт',business:'Бизнес',other:'Прочее'};
+const CICO={estate:'🏠',invest:'📈',cash:'🏦',crypto:'₿',transport:'🚗',business:'💼',other:'⚙️'};
+const CCOL={
+  estate:{c:'#C8A55A',g:'rgba(200,165,90,.12)'},
+  invest:{c:'#38A8C9',g:'rgba(56,168,201,.12)'},
+  cash:{c:'#3DB870',g:'rgba(61,184,112,.12)'},
+  crypto:{c:'#B464C8',g:'rgba(180,100,200,.12)'},
+  transport:{c:'#E07060',g:'rgba(224,112,96,.12)'},
+  business:{c:'#E8963C',g:'rgba(232,150,60,.12)'},
+  other:{c:'#8888A0',g:'rgba(136,136,160,.1)'},
+};
+
+const DEMO_ASSETS=[
+  {id:'1',name:'Квартира в Москве',category:'estate',amount:2800000,isDebt:false,note:''},
+  {id:'2',name:'Брокерский счёт',category:'invest',amount:1050000,isDebt:false,note:''},
+  {id:'3',name:'Вклад в Сбербанке',category:'cash',amount:720300,isDebt:false,note:''},
+  {id:'4',name:'BMW X5',category:'transport',amount:302000,isDebt:false,note:''},
+];
+const DEMO_SNAPS=[
+  {date:'2025-11',total:4200000},{date:'2025-12',total:4380000},
+  {date:'2026-01',total:4490000},{date:'2026-02',total:4620000},
+  {date:'2026-03',total:4715900},{date:'2026-04',total:4820000},
+  {date:'2026-05',total:4872300},
+];
+const DEMO_GOALS=[{id:'g1',title:'Капитал 10 000 000 ₽',targetAmount:10000000,deadline:'2026-12-31'}];
+
+let S={assets:DEMO_ASSETS,goals:DEMO_GOALS,snapshots:DEMO_SNAPS,currency:'RUB'};
+function load(){try{const r=localStorage.getItem('murza2');if(r){const d=JSON.parse(r);S={assets:d.assets||DEMO_ASSETS,goals:d.goals||[],snapshots:d.snapshots||DEMO_SNAPS,currency:d.currency||'RUB'}}}catch(e){}}
+function save(){try{localStorage.setItem('murza2',JSON.stringify(S))}catch(e){}}
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36)}
+function fmt(n,c){c=c||S.currency;const v=n*(RATES[c]||1),s=SYM[c]||c;return c==='RUB'?s+' '+Math.round(v).toLocaleString('ru-RU'):s+' '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+/* ── NAV ── */
+const stk=[];let curTab='home';
+function navTo(id){
+  const cur=stk.length?document.getElementById('scr-'+stk[stk.length-1]):document.getElementById('scr-'+curTab);
+  if(cur)cur.classList.add('back');
+  const nx=document.getElementById('scr-'+id);
+  if(nx){nx.classList.add('active');stk.push(id)}
+}
+function navBack(){
+  if(!stk.length)return;
+  const cur=document.getElementById('scr-'+stk.pop());
+  if(cur)cur.classList.remove('active');
+  const pv=stk.length?document.getElementById('scr-'+stk[stk.length-1]):document.getElementById('scr-'+curTab);
+  if(pv)pv.classList.remove('back');
+}
+function goTab(tab){
+  ['home','analysis','goals'].forEach(t=>{
+    const s=document.getElementById('scr-'+t);
+    if(s){s.classList.toggle('active',t===tab);s.classList.remove('back')}
+    for(let i=1;i<=3;i++){
+      const b=document.getElementById('t'+i+'-'+t.charAt(0));
+      if(b)b.classList.toggle('active',t===tab);
+    }
+  });
+  curTab=tab;stk.length=0;
+  if(tab==='analysis')renderAn();
+  if(tab==='goals')renderG();
+}
+
+/* ── HOME ── */
+function renderHome(){
+  const{assets,snapshots,currency:cur}=S;
+  const total=assets.reduce((s,a)=>a.isDebt?s-a.amount:s+a.amount,0);
+  document.getElementById('h-total').textContent=fmt(total,cur);
+  const alts=cur==='RUB'
+    ?['≈ $'+Math.round(total*RATES.USD).toLocaleString('en-US')+' USD','≈ €'+Math.round(total*RATES.EUR).toLocaleString('en-US')+' EUR']
+    :['≈ ₽'+Math.round(total/RATES[cur]).toLocaleString('ru-RU')+' RUB'];
+  document.getElementById('h-alt').textContent=alts.join('  ·  ');
+
+  const prev=snapshots.length>=2?snapshots[snapshots.length-2].total:total;
+  const dAbs=total-prev,dPct=prev>0?((dAbs/prev)*100).toFixed(1):'0.0',isUp=dAbs>=0;
+  const badge=document.getElementById('h-badge');
+  badge.className='gbadge '+(isUp?'up':'dn');
+  badge.textContent=(isUp?'↑ +':'↓ ')+dPct+'%';
+  document.getElementById('h-mono').textContent=(isUp?'+':'')+fmt(dAbs,cur)+' за месяц';
+
+  renderSpark();
+
+  const maxA=Math.max(...assets.map(a=>a.amount),1);
+  const list=document.getElementById('a-list');
+  if(!assets.length){
+    list.innerHTML='<div class="empty"><div class="empty-ico">👛</div><div class="empty-txt">Добавьте первый актив</div></div>';
+    return;
+  }
+  list.innerHTML=assets.map(a=>{
+    const cc=CCOL[a.category]||CCOL.other;
+    const pct=Math.round((Math.abs(a.amount)/maxA)*100);
+    const sh=((Math.abs(a.amount)/maxA)*100).toFixed(1);
+    return`<div class="acard" onclick="openEdit('${a.id}')">
+      <div class="aicon" style="background:${cc.g}">${CICO[a.category]||'⚙️'}</div>
+      <div class="ainfo">
+        <div class="aname">${esc(a.name)}</div>
+        <div class="atag" style="color:${cc.c}">${CLAB[a.category]||'Прочее'}</div>
+        <div class="abar-bg"><div class="abar" style="width:${pct}%;background:${cc.c}"></div></div>
+      </div>
+      <div class="aamts">
+        <div class="aamt" style="color:${a.isDebt?'var(--neg)':cc.c}">${a.isDebt?'−':''}${fmt(a.amount,cur)}</div>
+        <div class="ashare">${sh}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSpark(){
+  const{snapshots:snaps,currency:cur}=S;
+  const sec=document.getElementById('spark-sec');
+  if(snaps.length<2){sec.style.display='none';return}
+  sec.style.display='';
+  const vals=snaps.map(s=>s.total);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=mx-mn||1;
+  const W=300,H=48;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*W},${H-((v-mn)/rng)*H}`).join(' ');
+  const lx=W,ly=H-((vals[vals.length-1]-mn)/rng)*H;
+  document.getElementById('sp-svg').innerHTML=
+    `<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--gold)" stop-opacity=".15"/><stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>
+    <polyline points="${pts}" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".7"/>
+    <circle cx="${lx}" cy="${ly}" r="3.5" fill="var(--gold)"/>
+    <circle cx="${lx}" cy="${ly}" r="7" fill="var(--gold)" opacity=".15"/>`;
+  const d=vals[vals.length-1]-vals[0],p=((d/vals[0])*100).toFixed(1),col=d>=0?'var(--pos)':'var(--neg)';
+  document.getElementById('sp-delta').innerHTML=`<span style="color:${col}">${d>=0?'+':''}${fmt(d,cur)}</span>`;
+  document.getElementById('sp-pct').innerHTML=`<span style="color:${col}">${d>=0?'↑':'↓'} ${p}%</span>`;
+  document.getElementById('sp-from').textContent=snaps[0].date;
+  document.getElementById('sp-to').textContent=snaps[snaps.length-1].date;
+}
+
+/* ── ADD ── */
+function makeCatGrid(id,sel){
+  const el=document.getElementById(id);
+  el._sel=sel||'cash';
+  el.innerHTML=CATS.map(c=>{
+    const cc=CCOL[c],on=c===el._sel;
+    return`<div class="citem${on?' on':''}" data-c="${c}" style="${on?`color:${cc.c};background:${cc.g};border-color:${cc.c}`:''}">
+      <span class="citem-ico">${CICO[c]}</span>
+      <span class="citem-lbl">${CLAB[c]}</span>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.citem').forEach(item=>item.addEventListener('click',()=>{
+    const c=item.dataset.c,cc=CCOL[c];
+    el._sel=c;
+    el.querySelectorAll('.citem').forEach(i=>{
+      const ic=i.dataset.c,icc=CCOL[ic];
+      i.classList.toggle('on',ic===c);
+      i.style.cssText=ic===c?`color:${cc.c};background:${cc.g};border-color:${cc.c}`:'';
+    });
+  }));
+}
+
+function openAdd(){
+  document.getElementById('a-name').value='';
+  document.getElementById('a-amt').value='';
+  document.getElementById('a-note').value='';
+  document.getElementById('a-debt').classList.remove('on');
+  makeCatGrid('a-cats','cash');
+  navTo('add');
+}
+
+function doAdd(){
+  const name=document.getElementById('a-name').value.trim();
+  const amt=parseFloat(document.getElementById('a-amt').value);
+  if(!name){toast('Введите название');return}
+  if(isNaN(amt)||amt<=0){toast('Введите корректную сумму');return}
+  S.assets.push({id:uid(),name,amount:amt,currency:'RUB',category:document.getElementById('a-cats')._sel||'cash',isDebt:document.getElementById('a-debt').classList.contains('on'),note:document.getElementById('a-note').value.trim()});
+  save();renderHome();navBack();
+}
+
+/* ── EDIT ── */
+let editId=null;
+function openEdit(id){
+  editId=id;
+  const a=S.assets.find(x=>x.id===id);if(!a)return;
+  document.getElementById('e-name').value=a.name;
+  document.getElementById('e-amt').value=a.amount;
+  document.getElementById('e-note').value=a.note||'';
+  document.getElementById('e-debt').classList.toggle('on',!!a.isDebt);
+  makeCatGrid('e-cats',a.category);
+  navTo('edit');
+}
+function doEdit(){
+  const name=document.getElementById('e-name').value.trim();
+  const amt=parseFloat(document.getElementById('e-amt').value);
+  if(!name){toast('Введите название');return}
+  if(isNaN(amt)||amt<=0){toast('Некорректная сумма');return}
+  S.assets=S.assets.map(a=>a.id===editId?{...a,name,amount:amt,category:document.getElementById('e-cats')._sel||'cash',isDebt:document.getElementById('e-debt').classList.contains('on'),note:document.getElementById('e-note').value.trim()}:a);
+  save();renderHome();navBack();
+}
+function askDelete(){
+  const a=S.assets.find(x=>x.id===editId);if(!a)return;
+  document.getElementById('dlg-title').textContent='Удалить актив?';
+  document.getElementById('dlg-msg').textContent=a.name;
+  document.getElementById('dlg-ok').onclick=()=>{S.assets=S.assets.filter(x=>x.id!==editId);save();renderHome();closeOvl();navBack();navBack()};
+  document.getElementById('ovl').classList.add('on');
+}
+function closeOvl(){document.getElementById('ovl').classList.remove('on')}
+
+/* ── ANALYSIS ── */
+function renderAn(){
+  const{assets,currency:cur}=S;
+  const tA=assets.filter(a=>!a.isDebt).reduce((s,a)=>s+a.amount,0);
+  const tD=assets.filter(a=>a.isDebt).reduce((s,a)=>s+a.amount,0);
+  const net=tA-tD;
+  const byC={};assets.filter(a=>!a.isDebt).forEach(a=>{byC[a.category]=(byC[a.category]||0)+a.amount});
+  const sorted=Object.entries(byC).sort(([,a],[,b])=>b-a);
+  const debts=assets.filter(a=>a.isDebt);
+  document.getElementById('an-body').innerHTML=`
+    <div class="sum-row">
+      <div class="scard"><div class="scard-lbl">АКТИВЫ</div><div class="scard-val" style="color:var(--pos)">${fmt(tA,cur)}</div></div>
+      <div class="scard"><div class="scard-lbl">ДОЛГИ</div><div class="scard-val" style="color:var(--neg)">${tD>0?'−'+fmt(tD,cur):'—'}</div></div>
+    </div>
+    <div class="netcard"><div class="netcard-lbl">ЧИСТЫЙ КАПИТАЛ</div><div class="netcard-val">${fmt(net,cur)}</div></div>
+    <div style="padding:20px 22px 12px"><span class="sec-title">РАЗБИВКА ПО КАТЕГОРИЯМ</span></div>
+    ${sorted.map(([cat,amt])=>{const cc=CCOL[cat]||CCOL.other,pct=tA>0?(amt/tA*100):0;
+      return`<div class="cbar-row"><div class="cdot" style="background:${cc.c}"></div><div class="cbar-info">
+        <div class="cbar-top"><span class="cbar-name">${CLAB[cat]||cat}</span><span class="cbar-amt" style="color:${cc.c}">${fmt(amt,cur)}</span></div>
+        <div class="bar2bg"><div class="bar2f" style="width:${pct.toFixed(1)}%;background:${cc.c}"></div></div>
+        <span class="cpct">${pct.toFixed(1)}%</span>
+      </div></div>`;}).join('')}
+    ${debts.length?`<div style="padding:20px 22px 12px"><span class="sec-title">ОБЯЗАТЕЛЬСТВА</span></div>${debts.map(a=>`<div class="debt-row"><span style="color:var(--neg);font-size:14px">⚠️</span><span class="dname">${esc(a.name)}</span><span class="damt">−${fmt(a.amount,cur)}</span></div>`).join('')}`:''}
+  `;
+}
+
+/* ── GOALS ── */
+function renderG(){
+  const{goals,assets}=S;
+  const total=assets.reduce((s,a)=>a.isDebt?s-a.amount:s+a.amount,0);
+  document.getElementById('g-body').innerHTML=!goals.length?
+    `<div class="empty"><div class="empty-ico">🎯</div><div class="empty-txt">Поставьте первую<br>финансовую цель</div><button onclick="navTo('goal-add')" style="margin-top:12px;border:1px solid var(--b3);border-radius:10px;padding:10px 24px;color:var(--gold);background:none;font-size:12px;letter-spacing:1px;cursor:pointer;font-family:var(--sans)">ДОБАВИТЬ ЦЕЛЬ</button></div>`:
+    goals.map(g=>{
+      const pct=Math.min((total/g.targetAmount)*100,100),rem=g.targetAmount-total,done=total>=g.targetAmount;
+      return`<div class="gcard">
+        <div class="gcard-top">
+          <div class="gcard-name">${esc(g.title)}</div>
+          <button class="gdel" onclick="rmGoal('${g.id}')">🗑️</button>
+        </div>
+        <div class="pb"><div class="pbf" style="width:${pct.toFixed(1)}%;background:${done?'var(--pos)':'var(--gold)'}"></div></div>
+        <div class="gstats">
+          <div><div class="gstat-l">ВЫПОЛНЕНО</div><div class="gstat-v" style="color:${done?'var(--pos)':'var(--gold)'}">${pct.toFixed(1)}%</div></div>
+          <div style="text-align:center"><div class="gstat-l">ЦЕЛЬ</div><div class="gstat-v">${fmt(g.targetAmount,'RUB')}</div></div>
+          <div style="text-align:right"><div class="gstat-l">${done?'ДОСТИГНУТА':'ОСТАЛОСЬ'}</div><div class="gstat-v" style="color:${done?'var(--pos)':'var(--text)'}">${done?'🏆':fmt(rem,'RUB')}</div></div>
+        </div>
+        ${g.deadline?`<div class="gdeadline">Дедлайн: ${g.deadline}</div>`:''}
+      </div>`;}).join('');
+}
+function doGoal(){
+  const t=document.getElementById('gt').value.trim(),a=parseFloat(document.getElementById('ga').value),d=document.getElementById('gd').value.trim();
+  if(!t||isNaN(a)||a<=0){toast('Заполните все поля');return}
+  S.goals.push({id:uid(),title:t,targetAmount:a,deadline:d});
+  save();renderG();
+  document.getElementById('gt').value='';document.getElementById('ga').value='';document.getElementById('gd').value='';
+  navBack();
+}
+function rmGoal(id){S.goals=S.goals.filter(g=>g.id!==id);save();renderG()}
+
+/* ── SETTINGS ── */
+function renderSettings(){document.querySelectorAll('.curr-btn').forEach(b=>b.classList.toggle('on',b.dataset.c===S.currency))}
+function setCurr(c){S.currency=c;save();renderSettings();renderHome()}
+function doSnap(){
+  const total=S.assets.reduce((s,a)=>a.isDebt?s-a.amount:s+a.amount,0);
+  const date=new Date().toISOString().slice(0,7);
+  S.snapshots=S.snapshots.filter(s=>s.date!==date);
+  S.snapshots.push({date,total});
+  S.snapshots.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderHome();toast('Снимок сохранён');
+}
+
+/* ── TOAST ── */
+let tt;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2200)}
+
+/* ── PWA ── */
+function initPWA(){
+  const c=document.createElement('canvas');c.width=c.height=512;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#08080F';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle='rgba(200,165,90,0.08)';
+  ctx.beginPath();ctx.arc(256,200,220,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#C8A55A';
+  ctx.font='220px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('М',258,260);
+  const ico=c.toDataURL('image/png');
+  const mf={name:'МУРЗА — Wealth Tracker',short_name:'МУРЗА',start_url:'.',display:'standalone',background_color:'#08080F',theme_color:'#08080F',orientation:'portrait',icons:[{src:ico,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
+  const blob=new Blob([JSON.stringify(mf)],{type:'application/json'});
+  const link=document.createElement('link');link.rel='manifest';link.href=URL.createObjectURL(blob);
+  document.head.appendChild(link);
+}
+
+/* ── INIT ── */
+load();initPWA();renderHome();renderSettings();
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('fetch',e=>e.respondWith(caches.open('mz1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{c.put(e.request,res.clone());return res})))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+</script>
+</body>
+</html>
